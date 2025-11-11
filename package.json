@@ -1,0 +1,12 @@
+{
+  "name": "𝗡𝗮𝗶𝗹𝗼𝗻𝗴 𝗕𝗼𝘁 𝗩𝟮.𝟬",
+  "version": "1.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "node-telegram-bot-api": "^0.61.0",
+    "moment": "^2.29.4"
+  },
+  "scripts": {
+    "start": "node index.js"
+  }
+}
