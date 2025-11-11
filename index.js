@@ -174,8 +174,11 @@ bot.onText(/\/start(?:\s+(\w+))?/, async (msg) => {
 ├── /broadcast
 ├── /share
 ├── /set
-├── /aturjeda
+├── /setjedaauto
 ├── /auto
+├── /addprem
+├── /delprem
+├── /listprem
 ╰────────────────────────────>
 
 ╭──── ⧼ 𝗖𝗔𝗥𝗔 𝗗𝗔𝗣𝗔𝗧𝗜𝗡 𝗣𝗥𝗘𝗠 ⧽ ────╮
@@ -343,18 +346,37 @@ bot.on('message', async (msg) => {
           const pending = getPending();
 
           if (inviter && pending[inviter]) {
-            const totalGrup = getGroups().filter(id => typeof id === 'number').length;
+  const pending = getPending();
+  if (!pending[inviter].groups) pending[inviter].groups = [];
 
-            if (totalGrup >= MIN_GROUP_FOR_PREMIUM) {
-              addPremium(inviter, PREMIUM_DAYS_ON_JOIN, 'grup');
-              delete pending[inviter];
-              savePending(pending);
+  // Tambahkan grup baru ke daftar milik user
+  if (!pending[inviter].groups.includes(chatId)) {
+    pending[inviter].groups.push(chatId);
+    savePending(pending);
+  }
 
-              bot.sendMessage(inviter, `🎉 Bot berhasil ditambahkan ke grup!\n💎 Premium aktif selama ${PREMIUM_DAYS_ON_JOIN} hari.\n\nGunakan fitur premium sekarang.`);
-            } else {
-              bot.sendMessage(inviter, `📌 Bot berhasil ditambahkan. Tambahkan ke minimal ${MIN_GROUP_FOR_PREMIUM} grup agar premium aktif.`);
-            }
-          }
+  // Cek grup valid (punya ≥15 member)
+  let validCount = 0;
+  for (const gid of pending[inviter].groups) {
+    try {
+      const count = await bot.getChatMemberCount(gid);
+      if (count >= 15) validCount++;
+    } catch (err) {
+      console.log(`Gagal cek member grup ${gid}:`, err.message);
+    }
+  }
+
+  // Jika sudah 2 grup valid
+  if (validCount >= MIN_GROUP_FOR_PREMIUM) {
+    addPremium(inviter, PREMIUM_DAYS_ON_JOIN, 'grup');
+    delete pending[inviter];
+    savePending(pending);
+
+    bot.sendMessage(inviter, `🎉 Terima kasih telah menambahkan bot ke ${validCount} grup valid!\n💎 Premium kamu aktif selama ${PREMIUM_DAYS_ON_JOIN} hari.`);
+  } else {
+    bot.sendMessage(inviter, `📌 Kamu baru menambahkan ${validCount} grup valid.\nTambahkan ke minimal ${MIN_GROUP_FOR_PREMIUM} grup dengan 15+ member agar premium aktif.`);
+  }
+}
         }
       }
     }
